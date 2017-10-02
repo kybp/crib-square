@@ -38,9 +38,6 @@
                 (map (lambda (rank) (make-card rank suit)) +ranks+))
               +suits+))
 
-(define deck-length length)
-(define map-deck map)
-
 ;; Return a cons whose car is the card that was drawn and whose cdr is the
 ;; remaining cards in the deck.
 (define draw-card identity)

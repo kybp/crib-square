@@ -14,15 +14,15 @@
             (point-value (rank i))))))
 
 (test-group "make-deck"
-  (test "A deck initially has 52 cards" 52 (deck-length (make-deck)))
+  (test "A deck initially has 52 cards" 52 (length (make-deck)))
   (test "A deck has cards of 4 suits"
         4
-        (length (delete-duplicates (map-deck card-suit (make-deck)))))
+        (length (delete-duplicates (map card-suit (make-deck)))))
   (for-each (lambda (suit)
               (test (format #f "A deck initially has 13 ~a" suit)
                     13
                     (count (lambda (other-suit) (eq? suit other-suit))
-                           (map-deck card-suit (make-deck)))))
+                           (map card-suit (make-deck)))))
             +suits+))
 
 (test-group "draw-card"
