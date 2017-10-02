@@ -98,7 +98,7 @@
                        tableau)))
 
 (define (get-card tableau row column)
-  (list-ref column (list-ref row tableau)))
+  (list-ref (list-ref tableau row) column))
 
 ;; Return a new tableau consisting of the original tableau with the given card
 ;; placed at the indicated, 0-indexed row and column intersection.
