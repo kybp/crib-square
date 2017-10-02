@@ -1,0 +1,37 @@
+(require-extension format)
+(load "crib-square.ss")
+
+(define (finish-game tableau deck)
+  (let ((starter (car (draw-card deck))))
+    (format #t "You got ~a points.~%" (game-value tableau starter))
+    (format #t "Explain? ")
+    (unless (member (read) '(n no q exit))
+            (for-each (lambda (hand)
+                        (format #t "Hand: ~{~a~^ ~} (~a) - ~a points~%"
+                                (map card->string hand)
+                                (card->string starter)
+                                (hand-value hand starter))
+                        (when (jack-point? hand starter)
+                              (format #t "  jack - 1 point~%"))
+                        (for-each (lambda (c)
+                                    (format #t "  ~a - ~a points~%"
+                                            c
+                                            (combination-value c)))
+                                  (score-hand hand starter)))
+                      (tableau-hands tableau)))))
+
+(let loop ((tableau (make-tableau))
+           (deck (make-deck))
+           (turns 0))
+  (print-tableau tableau)
+  (if (= turns 16) (finish-game tableau deck)
+      (let* ((result (draw-card deck))
+             (card (car result))
+             (deck (cdr result)))
+        (format #t "You drew ~a~%" (card->string card))
+        (format #t "Enter row then column number to place it: ")
+        (let* ((row (read))
+               (column (read)))
+          (loop (play-card card row column tableau)
+                deck
+                (+ turns 1))))))
