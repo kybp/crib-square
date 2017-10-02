@@ -5,7 +5,7 @@ command-line interface, but adding other frontends would be very simple.
 
 ## Dependencies
 
-* [CHICKEN Scheme](https://www.call-cc.org/) - tested on version 4.12.0
+* [CHICKEN Scheme](https://www.call-cc.org/) - tested on version 4.9.0
 
 ## Building and Running
 
@@ -35,5 +35,6 @@ make 8 5-card hands. Hands are scored according to crib rules:
 * **Fifteens** - Each unique set of cards in a hand that add up to 15 is worth
   2 points.
 
-After the game is finished, the program will offer to explain why it scored
-how it did, in case something is unclear.
+Additionally, turning a jack wins 2 points for the game (not per hand). After
+the game is finished, the program will offer to explain why it scored how it
+did, in case something is unclear.
