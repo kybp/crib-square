@@ -15,6 +15,8 @@
     (format #t "You got ~a points.~%" (game-value tableau starter))
     (format #t "Explain? (y/n) ")
     (unless (member (read) '(n no q exit))
+            (when (eq? (card-rank starter) 'jack)
+                  (format #t "jack starter: 2 points~%"))
             (for-each (lambda (hand)
                         (format #t "Hand: ~{~a~^ ~} (~a) - ~a points~%"
                                 (map card->string hand)

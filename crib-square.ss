@@ -228,5 +228,6 @@
         combinations)))
 
 (define (game-value tableau starter)
-  (apply + (map (lambda (hand) (hand-value hand starter))
-                (tableau-hands tableau))))
+  (+ (if (eq? (card-rank starter) 'jack) 2 0)
+     (apply + (map (lambda (hand) (hand-value hand starter))
+                   (tableau-hands tableau)))))

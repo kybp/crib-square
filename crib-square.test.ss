@@ -263,7 +263,6 @@
                           (make-card 'jack 'clubs)
                           (make-card 10 'clubs))
                     (make-card 5 'spades)))
-
   (test "Adds 1 to the combination score if the hand contains the jack"
         11
         (hand-value (list (make-card 'jack 'diamonds)
@@ -271,5 +270,18 @@
                           (make-card 'queen 'clubs)
                           (make-card 'king 'clubs))
                     (make-card 10 'diamonds))))
+
+(test-group "game-value"
+  (let ((tableau (do ((i 0 (+ i 1))
+                      (deck (shuffle (make-deck)) (drop deck 4))
+                      (tableau '() (cons (take deck 4) tableau)))
+                     ((= i 4) tableau)))
+        (starter (make-card 2 'clubs)))
+    (test "Returns the sum of the hand values of every column and row"
+          (apply + (map (lambda (hand)
+                          (hand-value hand starter))
+                        (append (tableau-columns tableau)
+                                (tableau-rows tableau))))
+          (game-value tableau starter))))
 
 (test-exit)
