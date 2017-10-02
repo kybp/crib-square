@@ -38,6 +38,15 @@
                 (map (lambda (rank) (make-card rank suit)) +ranks+))
               +suits+))
 
+(define (shuffle deck)
+  (let ((vector (list->vector deck)))
+    (let loop ((n (- (vector-length vector) 1)) (acc '()))
+      (if (negative? n) acc
+          (let* ((i (random (+ n 1)))
+                 (x (vector-ref vector i)))
+            (vector-set! vector i (vector-ref vector n))
+            (loop (- n 1) (cons x acc)))))))
+
 ;; Return a cons whose car is the card that was drawn and whose cdr is the
 ;; remaining cards in the deck.
 (define draw-card identity)

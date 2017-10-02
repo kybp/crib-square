@@ -25,6 +25,14 @@
                            (map card-suit (make-deck)))))
             +suits+))
 
+(test-group "shuffle"
+  (test "Shuffling a deck does not change the number of cards in it"
+        52
+        (length (shuffle (make-deck))))
+  (test-assert "Shuffling a deck re-orders it"
+               (let ((deck (make-deck)))
+                 (not (equal? deck (shuffle deck))))))
+
 (test-group "draw-card"
   (test "Drawing a card decrements a deck's length by 1"
         (- (length (make-deck)) 1)

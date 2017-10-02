@@ -21,7 +21,7 @@
                       (tableau-hands tableau)))))
 
 (let loop ((tableau (make-tableau))
-           (deck (make-deck))
+           (deck (shuffle (make-deck)))
            (turns 0))
   (print-tableau tableau)
   (if (= turns 16) (finish-game tableau deck)
