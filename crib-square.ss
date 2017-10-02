@@ -71,7 +71,7 @@
                       (deck (cdr result)))
                  (not (member card deck equal?)))))
 
-(define (make-crib-squares)
+(define (make-tableau)
   '((#f #f #f #f)
     (#f #f #f #f)
     (#f #f #f #f)
@@ -83,24 +83,24 @@
 (define (nth-column tableau n)
   (map (lambda (row) (list-ref row n)) tableau))
 
-(define crib-squares-rows identity)
+(define tableau-rows identity)
 
-(define (crib-squares-columns tableau)
+(define (tableau-columns tableau)
   (list (nth-column tableau 0)
         (nth-column tableau 1)
         (nth-column tableau 2)
         (nth-column tableau 3)))
 
-(test-group "make-crib-squares"
+(test-group "make-tableau"
   (test "The tableau has 4 rows"
         4
-        (length (crib-squares-rows (make-crib-squares))))
+        (length (tableau-rows (make-tableau))))
   (test "The tableau has 4 columns"
         4
-        (length (crib-squares-columns (make-crib-squares))))
+        (length (tableau-columns (make-tableau))))
   (test "All spaces are initially #f"
         '(#f)
-        (delete-duplicates (flatten (make-crib-squares)))))
+        (delete-duplicates (flatten (make-tableau)))))
 
 (define (map-indexed function list)
   (let loop ((i 0) (list list) (acc '()))
@@ -125,19 +125,19 @@
 
 (test-group "play-card"
   (let* ((card (make-card 2 'clubs))
-         (tableau (play-card card 0 0 (make-crib-squares))))
+         (tableau (play-card card 0 0 (make-tableau))))
     (test "After playing a card the tableau has 4 rows"
           4
-          (length (crib-squares-rows tableau)))
+          (length (tableau-rows tableau)))
     (test "After playing a card the tableau has 4 columns"
           4
-          (length (crib-squares-columns tableau)))
+          (length (tableau-columns tableau)))
     (test "Playing a card places that card into the tableau"
           (list '(#f #f #f #f)
                 (list #f #f card #f)
                 '(#f #f #f #f)
                 '(#f #f #f #f))
-          (play-card card 1 2 (make-crib-squares)))))
+          (play-card card 1 2 (make-tableau)))))
 
 (define (n-copies n object)
   (do ((i 0 (+ i 1))
@@ -359,3 +359,38 @@
                           (make-card 2 'clubs)
                           (make-card 'ace 'hearts))
                     (make-card 5 'diamonds))))
+
+(define (combination-value combination)
+  (cond ((eq? combination 'fifteen) 2)
+        ((eq? combination 'pair) 2)
+        ((eq? combination 'little-flush) 4)
+        ((eq? combination 'big-flush) 5)
+        ((eq? (car combination) 'run) (cadr combination))))
+
+(define (hand-value hand starter)
+  (let ((combinations
+         (apply + (map combination-value (score-hand hand starter)))))
+    (if (member (make-card 'jack (card-suit starter)) hand equal?)
+        (+ combinations 1)
+        combinations)))
+
+(test-group "hand-value"
+  (test "Returns the sum of the hand's combination scores"
+        16
+        (hand-value (list (make-card 'king 'clubs)
+                          (make-card 'queen 'clubs)
+                          (make-card 'jack 'clubs)
+                          (make-card 10 'clubs))
+                    (make-card 5 'spades)))
+  (test "Adds 1 to the combination score if the hand contains the jack"
+        11
+        (hand-value (list (make-card 'jack 'diamonds)
+                          (make-card 'jack 'spades)
+                          (make-card 'queen 'clubs)
+                          (make-card 'king 'clubs))
+                    (make-card 10 'diamonds))))
+
+(define (game-value tableau starter)
+  (apply + (map (lambda (hand) (hand-value hand starter))
+                (append (tableau-columns tableau)
+                        (tableau-rows tableau)))))
