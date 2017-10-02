@@ -1,6 +1,15 @@
 (require-extension format)
 (load "crib-square.ss")
 
+(define (print-explanation combination)
+  (let ((type (combination-type combination)))
+    (format #t "  ~a points - ~a - " (combination-value combination) type)
+    (if (member type '(little-flush big-flush))
+        (display (combination-flush-suit combination))
+        (format #t "~{~a~^ ~}"
+                (map card->string (combination-cards combination))))
+    (newline)))
+
 (define (finish-game tableau deck)
   (let ((starter (car (draw-card deck))))
     (format #t "You got ~a points.~%" (game-value tableau starter))
@@ -13,11 +22,7 @@
                                 (hand-value hand starter))
                         (when (jack-point? hand starter)
                               (format #t "  jack - 1 point~%"))
-                        (for-each (lambda (c)
-                                    (format #t "  ~a - ~a points~%"
-                                            c
-                                            (combination-value c)))
-                                  (score-hand hand starter)))
+                        (for-each print-explanation (score-hand hand starter)))
                       (tableau-hands tableau)))))
 
 (let loop ((tableau (make-tableau))
