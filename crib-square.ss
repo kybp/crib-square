@@ -14,6 +14,18 @@
 (define card-rank car)
 (define card-suit cdr)
 
+(define (card->string card)
+  (if (not card) "  "
+      (let ((rank (card-rank card))
+            (suit (card-suit card))
+            (first-character (lambda (symbol)
+                               (string-ref (symbol->string symbol) 0))))
+        (format #f "~:(~a~a~)"
+                (cond ((eqv? rank 10) #\T)
+                      ((number? rank) rank)
+                      (else (first-character rank)))
+                (first-character suit)))))
+
 (define (point-value card)
   (let ((rank (card-rank card)))
     (cond ((number? rank) rank)
@@ -91,6 +103,10 @@
         (nth-column tableau 2)
         (nth-column tableau 3)))
 
+(define (tableau-hands tableau)
+  (append (tableau-columns tableau)
+          (tableau-rows tableau)))
+
 (test-group "make-tableau"
   (test "The tableau has 4 rows"
         4
@@ -108,6 +124,16 @@
         (loop (+ i 1)
               (cdr list)
               (cons (function i (car list)) acc)))))
+
+(define (print-tableau tableau)
+  (format #t "   ~{~3a~}~%" '(0 1 2 3))
+  (format #t "~{~{~a~^ ~}~%~}"
+          (map-indexed (lambda (i row)
+                         (cons i (map card->string row)))
+                       tableau)))
+
+(define (get-card tableau row column)
+  (list-ref column (list-ref row tableau)))
 
 ;; Return a new tableau consisting of the original tableau with the given card
 ;; placed at the indicated, 0-indexed row and column intersection.
@@ -367,10 +393,13 @@
         ((eq? combination 'big-flush) 5)
         ((eq? (car combination) 'run) (cadr combination))))
 
+(define (jack-point? hand starter)
+  (member (make-card 'jack (card-suit starter)) hand equal?))
+
 (define (hand-value hand starter)
   (let ((combinations
          (apply + (map combination-value (score-hand hand starter)))))
-    (if (member (make-card 'jack (card-suit starter)) hand equal?)
+    (if (jack-point? hand starter)
         (+ combinations 1)
         combinations)))
 
@@ -392,5 +421,40 @@
 
 (define (game-value tableau starter)
   (apply + (map (lambda (hand) (hand-value hand starter))
-                (append (tableau-columns tableau)
-                        (tableau-rows tableau)))))
+                (tableau-hands tableau))))
+
+(define (main)
+  (let ((finish-game
+         (lambda (tableau deck)
+           (let ((starter (car (draw-card deck))))
+             (format #t "You got ~a points.~%" (game-value tableau starter))
+             (format #t "Explain? ")
+             (unless (member (read) '(n no q exit))
+                     (for-each (lambda (hand)
+                                 (format #t "Hand: ~{~a~^ ~} (~a) - ~a points~%"
+                                         (map card->string hand)
+                                         (card->string starter)
+                                         (hand-value hand starter))
+                                 (when (jack-point? hand starter)
+                                       (format #t "  jack - 1 point~%"))
+                                 (for-each (lambda (c)
+                                             (format #t "  ~a - ~a points~%"
+                                                     c
+                                                     (combination-value c)))
+                                           (score-hand hand starter)))
+                               (tableau-hands tableau)))))))
+    (let loop ((tableau (make-tableau))
+               (deck (make-deck))
+               (turns 0))
+      (print-tableau tableau)
+      (if (= turns 16) (finish-game tableau deck)
+          (let* ((result (draw-card deck))
+                 (card (car result))
+                 (deck (cdr result)))
+            (format #t "You drew ~a~%" (card->string card))
+            (format #t "Enter row then column number to place it: ")
+            (let* ((row (read))
+                   (column (read)))
+              (loop (play-card card row column tableau)
+                    deck
+                    (+ turns 1))))))))
